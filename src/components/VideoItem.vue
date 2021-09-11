@@ -1,10 +1,18 @@
 <template>
   <div ref="videoRef" class="video" @click="onToogleVideo">
-    <top-video />
-    <video class="video__element" src="@/assets/demo.mp4" loop></video>
+    <video class="video__element" :src="video.source" volume="0.3" loop></video>
     <div class="video__bottom">
-      <info-video />
-      <control-video />
+      <info-video
+        :username="video.owner.username"
+        :description="video.description"
+      />
+      <control-video
+        :like="video.likeCounter"
+        :comment="video.commentCounter"
+        :share="video.shareCounter"
+        :id="video._id"
+        :is-liked="video.isLiked"
+      />
     </div>
   </div>
 </template>
@@ -13,14 +21,16 @@
 import { onBeforeUnmount, onMounted, ref } from "@vue/runtime-core";
 import InfoVideo from "./InfoVideo.vue";
 import ControlVideo from "./ControlVideo.vue";
-import TopVideo from "./TopVideo.vue";
 
 export default {
-  name: "App",
   components: {
     InfoVideo,
     ControlVideo,
-    TopVideo,
+  },
+  props: {
+    video: {
+      type: Object,
+    },
   },
   setup() {
     const videoRef = ref(null);

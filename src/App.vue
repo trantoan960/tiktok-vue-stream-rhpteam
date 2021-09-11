@@ -1,28 +1,36 @@
 <template>
   <top-video />
   <div id="video__inner">
-    <video-item />
-    <video-item />
-    <video-item />
+    <video-item
+      v-for="(video, index) in videoList"
+      :key="index"
+      :video="video"
+    />
   </div>
-  <div style="position: absolute;top: 0; left: 0;">
-    <button @click="activeFirstVideo">Click dang nhap</button>
-  </div>
+  <login-modal @onPlayVideo="activeFirstVideo" />
 </template>
 
 <script>
 import { onMounted, ref } from "@vue/runtime-core";
+import LoginModal from "./components/LoginModal.vue";
 import TopVideo from "./components/TopVideo.vue";
 import VideoItem from "./components/VideoItem.vue";
+
+// import other logic from outside
+import useVideo from "./composables/useVideo";
 
 export default {
   name: "App",
   components: {
+    LoginModal,
     TopVideo,
     VideoItem,
   },
   setup() {
     const observerForScroll = ref(null);
+    const { videoList, fetchVideos } = useVideo();
+
+    fetchVideos();
 
     function activeFirstVideo() {
       let targets = document.querySelectorAll("#video__inner .video");
@@ -35,8 +43,17 @@ export default {
         rootMargin: "0px",
         threshold: 1.0,
       };
+      let currentVideoElement = null;
       observerForScroll.value = new IntersectionObserver(function(entries) {
-        if (entries && entries.length > 0) {
+        if (entries && entries.length === 1 && entries[0].isIntersecting) {
+          if (currentVideoElement) {
+            currentVideoElement.pause();
+            currentVideoElement.currentTime = 0;
+          }
+          // console.log(entries[0]);
+          currentVideoElement = entries[0].target.querySelector(
+            ".video__element"
+          );
           entries[0].target.querySelector(".video__element").play();
         }
       }, options);
@@ -46,7 +63,7 @@ export default {
       });
     });
 
-    return { activeFirstVideo };
+    return { activeFirstVideo, videoList };
   },
 };
 </script>
